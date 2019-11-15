@@ -61,7 +61,7 @@ def runHotcellAnalysis(spark: SparkSession, pointPath: String): DataFrame =
   
   val SD = scala.math.sqrt(((squares_sum.first().getDouble(0).toDouble / numCells.toDouble) - (mean.toDouble * mean.toDouble))).toDouble
   
-  spark.udf.register("NeighborCells", (inputX: Int, inputY: Int, inputZ: Int, minX: Int, maxX: Int, minY: Int, maxY: Int, minZ: Int, maxZ: Int) => ((HotcellUtils.calculateNeighbors(inputX, inputY, inputZ, minX, minY, minZ, maxX, maxY, maxZ))))
+  spark.udf.register("NeighborCells", (inputX: Int, inputY: Int, inputZ: Int, minX: Int, maxX: Int, minY: Int, maxY: Int, minZ: Int, maxZ: Int) => ((HotcellUtils.CalculateNeighbors(inputX, inputY, inputZ, minX, minY, minZ, maxX, maxY, maxZ))))
   
   val NeighborCells = spark.sql("select NeighborCells(one.x, one.y, one.z, " + minX + "," + maxX + "," + minY + "," + maxY + "," + minZ + "," + maxZ + ") as NeighborCount," + "one.x as x, one.y as y, one.z as z, " + "sum(two.num_hotzone) as sum_hotzone " + "from chosenHotzone as one, chosenHotzone as one " + "where (two.x = one.x+1 or two.x = one.x or two.x = one.x-1) " + "and (two.y = one.y+1 or two.y = one.y or two.y = one.y-1) " + "and (two.z = one.z+1 or two.z = one.z or two.z = one.z-1) " + "group by one.z, one.y, one.x " + "order by one.z, one.y, one.x")
   NeighborCells.createOrReplaceTempView("NeighborCells")
